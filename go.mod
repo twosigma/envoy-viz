@@ -1,4 +1,4 @@
-module github.com/blevz/envoy-viz
+module github.com/twosigma/envoy-viz
 
 go 1.16
 
