@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/blevz/envoy-viz/configreader"
-	"github.com/blevz/envoy-viz/graph"
 	"github.com/spf13/pflag"
+	"github.com/twosigma/envoy-viz/configreader"
+	"github.com/twosigma/envoy-viz/graph"
 )
 
 var (
