@@ -1,0 +1,32 @@
+name: make-master
+
+on:
+  push:
+  schedule:
+    - cron: '20 13 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+      - name: Install Envoy
+        run: |
+              sudo apt update
+              sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+              curl -sL 'https://getenvoy.io/gpg' | sudo apt-key add -
+              apt-key fingerprint 6FF974DB | grep "5270 CEAC"
+              sudo add-apt-repository "deb [arch=amd64] https://dl.bintray.com/tetrate/getenvoy-deb $(lsb_release -cs) stable"
+              sudo apt update
+              sudo apt install -y getenvoy-envoy
+              envoy --version
+      - name: Run Makefile
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: make clean && make all
