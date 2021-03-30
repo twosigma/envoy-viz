@@ -1,6 +1,6 @@
 .PHONY: all build clean test
 
-all:: build assets/static.svg assets/original-dst.svg assets/advanced.svg assets/http-filters.svg assets/envoy-edge.svg
+all:: build test assets/static.svg assets/original-dst.svg assets/advanced.svg assets/http-filters.svg assets/envoy-edge.svg
 
 assets:
 	mkdir -p assets
@@ -25,7 +25,7 @@ build: envoy-viz
 envoy-viz: envoy-viz.go
 	go build ./envoy-viz.go
 
-test: main.go
+test: envoy-viz.go
 	go test ./...
 
 clean::
