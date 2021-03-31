@@ -7,8 +7,11 @@ import (
 	envoy_admin_v3 "github.com/envoyproxy/go-control-plane/envoy/admin/v3"
 	_ "github.com/envoyproxy/go-control-plane/envoy/api/v2"
 
+	_ "github.com/cncf/udpa/go/udpa/type/v1"
 	_ "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
+	_ "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/router/v3"
 	_ "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
+	_ "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/tcp_proxy/v3"
 	_ "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/protobuf/encoding/protojson"
