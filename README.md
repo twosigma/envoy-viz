@@ -25,3 +25,8 @@ Basic example config from [envoy's codebase](https://github.com/envoyproxy/envoy
 ### Advanced Example
 Usings lots of envoy's features
 ![assets/advanced.svg](assets/advanced.svg)
+
+
+### Istio Config Dump Example
+Using an istio config dump
+![assets/istio.svg](assets/istio.svg)

@@ -3,14 +3,12 @@ package configreader
 import (
 	"context"
 	"fmt"
-	"os"
 	"os/exec"
 	"testing"
 	"time"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/config/bootstrap/v3"
 	_ "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
-	"github.com/twosigma/envoy-viz/configdump"
 )
 
 func TestDumper(t *testing.T) {
@@ -65,19 +63,12 @@ func TestParse(t *testing.T) {
 	}
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			configDumpBytes, err := os.ReadFile(test.inputFile)
+			configDump, err := ConfigDumpFromFile(test.inputFile)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-
-			var configDump configdump.Wrapper
-			err = configDump.UnmarshalJSON(configDumpBytes)
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			_, err = ParseEnvoyConfig(configDump.ConfigDump)
+			_, err = ParseEnvoyConfig(configDump)
 			if err != nil {
 				t.Error(err)
 				return

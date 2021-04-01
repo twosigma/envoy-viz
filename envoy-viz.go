@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	file          = pflag.String("file", "", "A file to read envoy config from")
-	adminUrl      = pflag.String("admin", "", "The url the admin api is running on")
-	render        = pflag.String("render", "", "How to render the result")
-	bootstrapOnly = pflag.BoolP("bootstrap-only", "b", false, "Only")
+	file       = pflag.String("file", "", "A file to read envoy config from")
+	adminUrl   = pflag.String("admin", "", "The url the admin api is running on")
+	render     = pflag.String("render", "", "How to render the result")
+	fullConfig = pflag.BoolP("full-config", "f", false, "Whether to use the full config or just the bootstrap of the envoy config dump")
 )
 
 func main() {
@@ -25,12 +25,26 @@ func main() {
 	}
 	var graphable graph.Graphable
 	if *file != "" {
-		bootstrap, err := configreader.FromFile(*file)
-		if err != nil {
-			panic(err)
-		}
-		graphable = &graph.GraphableBoostrap{
-			Bootstrap: bootstrap,
+		if !*fullConfig {
+			bootstrap, err := configreader.FromFile(*file)
+			if err != nil {
+				panic(err)
+			}
+			graphable = &graph.GraphableBoostrap{
+				Bootstrap: bootstrap,
+			}
+		} else {
+			configDump, err := configreader.ConfigDumpFromFile(*file)
+			if err != nil {
+				panic(err)
+			}
+			ec, err := configreader.ParseEnvoyConfig(configDump)
+			if err != nil {
+				panic(err)
+			}
+			graphable = &graph.GraphableConfigDump{
+				EnvoyConfig: ec,
+			}
 		}
 	} else if *adminUrl != "" {
 		r, err := configreader.ReadEnvoyConfig(*adminUrl)
@@ -41,7 +55,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		if *bootstrapOnly {
+		if !*fullConfig {
 			graphable = &graph.GraphableBoostrap{
 				Bootstrap: ec.Boostrap.Bootstrap,
 			}

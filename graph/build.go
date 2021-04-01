@@ -57,14 +57,13 @@ func (gcd *GraphableConfigDump) getCluster() ([]*v36.Cluster, error) {
 
 func (gcd *GraphableConfigDump) getListeners() ([]*v35.Listener, error) {
 	var toReturn []*v35.Listener
-	staticClusters := gcd.EnvoyConfig.Cluster.StaticClusters
-	for _, sc := range staticClusters {
+	staticListeners := gcd.EnvoyConfig.Listeners.StaticListeners
+	for _, sc := range staticListeners {
 		var listener v35.Listener
-		if err := ptypes.UnmarshalAny(sc.Cluster, &listener); err != nil {
+		if err := ptypes.UnmarshalAny(sc.Listener, &listener); err != nil {
 			return nil, err
 		}
 		toReturn = append(toReturn, &listener)
-
 	}
 	return toReturn, nil
 }

@@ -1,6 +1,6 @@
 .PHONY: all build clean test
 
-all:: build test assets/static.svg assets/original-dst.svg assets/advanced.svg assets/http-filters.svg assets/envoy-edge.svg
+all:: build test assets/static.svg assets/original-dst.svg assets/advanced.svg assets/http-filters.svg assets/envoy-edge.svg assets/istio.svg
 
 assets:
 	mkdir -p assets
@@ -19,6 +19,9 @@ assets/http-filters.svg: assets envoy-viz
 
 assets/envoy-edge.svg: assets envoy-viz
 	./envoy-viz --file ./testdata/envoy-edge.yaml --render svg > assets/envoy-edge.svg
+
+assets/istio.svg: assets envoy-viz
+	./envoy-viz --file ./testdata/istio-httpbin.json -f --render svg > assets/istio.svg
 
 build: envoy-viz
 
