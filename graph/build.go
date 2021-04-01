@@ -5,19 +5,71 @@ import (
 	"fmt"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/config/bootstrap/v3"
+	v36 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	v35 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	extAuthv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	httpv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"github.com/goccy/go-graphviz"
 	"github.com/goccy/go-graphviz/cgraph"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/twosigma/envoy-viz/configreader"
 )
 
 var (
 	g = graphviz.New()
 )
 
-func BuildGraph(bs *v3.Bootstrap) (*cgraph.Graph, error) {
+type Graphable interface {
+	getCluster() ([]*v36.Cluster, error)
+	getListeners() ([]*v35.Listener, error)
+}
+
+type GraphableBoostrap struct {
+	Bootstrap *v3.Bootstrap
+}
+
+func (gbs *GraphableBoostrap) getCluster() ([]*v36.Cluster, error) {
+	return gbs.Bootstrap.StaticResources.Clusters, nil
+}
+
+func (gbs *GraphableBoostrap) getListeners() ([]*v35.Listener, error) {
+	return gbs.Bootstrap.StaticResources.Listeners, nil
+}
+
+type GraphableConfigDump struct {
+	EnvoyConfig *configreader.EnvoyConfig
+}
+
+func (gcd *GraphableConfigDump) getCluster() ([]*v36.Cluster, error) {
+	var toReturn []*v36.Cluster
+	staticClusters := gcd.EnvoyConfig.Cluster.StaticClusters
+	for _, sc := range staticClusters {
+		var cluster v36.Cluster
+		if err := ptypes.UnmarshalAny(sc.Cluster, &cluster); err != nil {
+			return nil, err
+		}
+		toReturn = append(toReturn, &cluster)
+
+	}
+	return toReturn, nil
+}
+
+func (gcd *GraphableConfigDump) getListeners() ([]*v35.Listener, error) {
+	var toReturn []*v35.Listener
+	staticClusters := gcd.EnvoyConfig.Cluster.StaticClusters
+	for _, sc := range staticClusters {
+		var listener v35.Listener
+		if err := ptypes.UnmarshalAny(sc.Cluster, &listener); err != nil {
+			return nil, err
+		}
+		toReturn = append(toReturn, &listener)
+
+	}
+	return toReturn, nil
+}
+
+func BuildGraph(graphable Graphable) (*cgraph.Graph, error) {
 	graph, err := g.Graph()
 	if err != nil {
 		return nil, err
@@ -36,7 +88,11 @@ func BuildGraph(bs *v3.Bootstrap) (*cgraph.Graph, error) {
 	clusterSubgraph.SetLabelJust("l")
 	// Create cluster nodes first so we can link to them from the filters they are used in
 	clusters := map[string]*cgraph.Node{}
-	for _, c := range bs.StaticResources.Clusters {
+	clusterArray, err := graphable.getCluster()
+	if err != nil {
+		return nil, err
+	}
+	for _, c := range clusterArray {
 		// For each cluster, create a node
 		clusterNode, err := clusterSubgraph.CreateNode("Cluster: " + c.Name)
 		if err != nil {
@@ -64,7 +120,11 @@ func BuildGraph(bs *v3.Bootstrap) (*cgraph.Graph, error) {
 	listenerGraph.SetStyle(cgraph.FilledGraphStyle)
 	listenerGraph.SetLabel("Listeners")
 	listenerGraph.SetLabelJust("l")
-	for _, l := range bs.StaticResources.Listeners {
+	listenerArray, err := graphable.getListeners()
+	if err != nil {
+		return nil, err
+	}
+	for _, l := range listenerArray {
 		listener, err := listenerGraph.CreateNode("Listener: " + l.Name)
 		if err != nil {
 			return nil, err

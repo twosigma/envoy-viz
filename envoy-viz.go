@@ -6,16 +6,16 @@ import (
 	"log"
 	"os"
 
-	v3 "github.com/envoyproxy/go-control-plane/envoy/config/bootstrap/v3"
 	"github.com/spf13/pflag"
 	"github.com/twosigma/envoy-viz/configreader"
 	"github.com/twosigma/envoy-viz/graph"
 )
 
 var (
-	file     = pflag.String("file", "", "A file to read envoy config from")
-	adminUrl = pflag.String("admin", "", "The url the admin api is running on")
-	render   = pflag.String("render", "", "How to render the result")
+	file          = pflag.String("file", "", "A file to read envoy config from")
+	adminUrl      = pflag.String("admin", "", "The url the admin api is running on")
+	render        = pflag.String("render", "", "How to render the result")
+	bootstrapOnly = pflag.BoolP("bootstrap-only", "b", false, "Only")
 )
 
 func main() {
@@ -23,13 +23,15 @@ func main() {
 	if *file != "" && *adminUrl != "" {
 		log.Fatal("Only one of --file or --admin can be set at the same time")
 	}
-	var bs *v3.Bootstrap
+	var graphable graph.Graphable
 	if *file != "" {
 		bootstrap, err := configreader.FromFile(*file)
 		if err != nil {
 			panic(err)
 		}
-		bs = bootstrap
+		graphable = &graph.GraphableBoostrap{
+			Bootstrap: bootstrap,
+		}
 	} else if *adminUrl != "" {
 		r, err := configreader.ReadEnvoyConfig(*adminUrl)
 		if err != nil {
@@ -39,14 +41,22 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		bs = ec.Boostrap.Bootstrap
+		if *bootstrapOnly {
+			graphable = &graph.GraphableBoostrap{
+				Bootstrap: ec.Boostrap.Bootstrap,
+			}
+		} else {
+			graphable = &graph.GraphableConfigDump{
+				EnvoyConfig: ec,
+			}
+		}
 	} else {
 		panic("Must either set --file or --admin option")
 	}
 	if *render == "" {
-		json.NewEncoder(os.Stdout).Encode(&bs)
+		json.NewEncoder(os.Stdout).Encode(graphable)
 	} else {
-		g, err := graph.BuildGraph(bs)
+		g, err := graph.BuildGraph(graphable)
 		if err != nil {
 			panic(err)
 		}

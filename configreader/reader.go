@@ -25,3 +25,7 @@ func FromFile(filepath string) (*v3.Bootstrap, error) {
 	err = protojson.Unmarshal(contents, &bs)
 	return &bs, err
 }
+
+func ConfigDumpFromFile(filepath string) {
+
+}
