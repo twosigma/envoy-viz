@@ -43,28 +43,48 @@ type GraphableConfigDump struct {
 
 func (gcd *GraphableConfigDump) getCluster() ([]*v36.Cluster, error) {
 	var toReturn []*v36.Cluster
-	staticClusters := gcd.EnvoyConfig.Cluster.StaticClusters
-	for _, sc := range staticClusters {
+	for _, sc := range gcd.EnvoyConfig.Cluster.StaticClusters {
 		var cluster v36.Cluster
 		if err := ptypes.UnmarshalAny(sc.Cluster, &cluster); err != nil {
 			return nil, err
 		}
 		toReturn = append(toReturn, &cluster)
-
+	}
+	for _, sc := range gcd.EnvoyConfig.Cluster.DynamicActiveClusters {
+		var cluster v36.Cluster
+		if err := ptypes.UnmarshalAny(sc.Cluster, &cluster); err != nil {
+			return nil, err
+		}
+		toReturn = append(toReturn, &cluster)
+	}
+	for _, sc := range gcd.EnvoyConfig.Cluster.DynamicWarmingClusters {
+		var cluster v36.Cluster
+		if err := ptypes.UnmarshalAny(sc.Cluster, &cluster); err != nil {
+			return nil, err
+		}
+		toReturn = append(toReturn, &cluster)
 	}
 	return toReturn, nil
 }
 
 func (gcd *GraphableConfigDump) getListeners() ([]*v35.Listener, error) {
 	var toReturn []*v35.Listener
-	staticListeners := gcd.EnvoyConfig.Listeners.StaticListeners
-	for _, sc := range staticListeners {
+
+	for _, sc := range gcd.EnvoyConfig.Listeners.StaticListeners {
 		var listener v35.Listener
 		if err := ptypes.UnmarshalAny(sc.Listener, &listener); err != nil {
 			return nil, err
 		}
 		toReturn = append(toReturn, &listener)
 	}
+	for _, sc := range gcd.EnvoyConfig.Listeners.DynamicListeners {
+		var listener v35.Listener
+		if err := ptypes.UnmarshalAny(sc.ActiveState.Listener, &listener); err != nil {
+			return nil, err
+		}
+		toReturn = append(toReturn, &listener)
+	}
+
 	return toReturn, nil
 }
 
@@ -174,37 +194,39 @@ func BuildGraph(graphable Graphable) (*cgraph.Graph, error) {
 						lastNode = nextNode
 					}
 					rc := m.GetRouteConfig()
-					routeNode, err := graph.CreateNode("Route: " + rc.Name)
-					if err != nil {
-						return nil, err
-					}
-					graph.CreateEdge("", lastNode, routeNode)
-					for _, vh := range rc.VirtualHosts {
-						//virtualHostName := vh.Name
-						// TODO: virtualHostDomains := vh.Domains
-						for _, r := range vh.Routes {
-							match := r.GetMatch()
-							cluster := r.GetRoute().GetCluster()
-							if cluster != "" {
-								clusterNode := clusters[cluster]
-								edge, err := graph.CreateEdge("", routeNode, clusterNode)
-								if err != nil {
-									return nil, err
+					if rc != nil {
+						routeNode, err := graph.CreateNode("Route: " + rc.Name)
+						if err != nil {
+							return nil, err
+						}
+						graph.CreateEdge("", lastNode, routeNode)
+						for _, vh := range rc.VirtualHosts {
+							//virtualHostName := vh.Name
+							// TODO: virtualHostDomains := vh.Domains
+							for _, r := range vh.Routes {
+								match := r.GetMatch()
+								cluster := r.GetRoute().GetCluster()
+								if cluster != "" {
+									clusterNode := clusters[cluster]
+									edge, err := graph.CreateEdge("", routeNode, clusterNode)
+									if err != nil {
+										return nil, err
+									}
+									edge.SetLabel(fmt.Sprintf("%v", match))
 								}
-								edge.SetLabel(fmt.Sprintf("%v", match))
-							}
-							if directResponse := r.GetDirectResponse(); directResponse != nil {
-								directResponseNode, err := graph.CreateNode("DirectResponse: " + directResponse.String())
-								if err != nil {
-									return nil, err
+								if directResponse := r.GetDirectResponse(); directResponse != nil {
+									directResponseNode, err := graph.CreateNode("DirectResponse: " + directResponse.String())
+									if err != nil {
+										return nil, err
+									}
+									directResponseNode.SetShape("record")
+									directResponseNode.SetLabel(fmt.Sprintf("<f0> Direct Response\n|{%d | %s}", directResponse.GetStatus(), directResponse.Body.GetInlineString()))
+									edge, err := graph.CreateEdge("", routeNode, directResponseNode)
+									if err != nil {
+										return nil, err
+									}
+									edge.SetLabel(fmt.Sprintf("%v", match))
 								}
-								directResponseNode.SetShape("record")
-								directResponseNode.SetLabel(fmt.Sprintf("<f0> Direct Response\n|{%d | %s}", directResponse.GetStatus(), directResponse.Body.GetInlineString()))
-								edge, err := graph.CreateEdge("", routeNode, directResponseNode)
-								if err != nil {
-									return nil, err
-								}
-								edge.SetLabel(fmt.Sprintf("%v", match))
 							}
 						}
 					}

@@ -15,6 +15,7 @@ var (
 	file       = pflag.String("file", "", "A file to read envoy config from")
 	adminUrl   = pflag.String("admin", "", "The url the admin api is running on")
 	render     = pflag.String("render", "", "How to render the result")
+	layout     = pflag.String("layout", "", "How to layout the graph")
 	fullConfig = pflag.BoolP("full-config", "f", false, "Whether to use the full config or just the bootstrap of the envoy config dump")
 )
 
@@ -73,6 +74,9 @@ func main() {
 		g, err := graph.BuildGraph(graphable)
 		if err != nil {
 			panic(err)
+		}
+		if *layout != "" {
+			g.SetLayout(*layout)
 		}
 		b, err := graph.Render(g, *render)
 		if err != nil {

@@ -104,9 +104,9 @@
 <polygon fill="#000000" stroke="#000000" points="117.5024,-140.419 111.5975,-131.6222 110.7278,-142.1813 117.5024,-140.419"/>
 <text text-anchor="middle" x="173.9196" y="-176.8313" font-family="Times,serif" font-size="14.00" fill="#000000">prefix:&quot;/content&quot;</text>
 </g>
-<!-- DirectResponse: status:403 &#160;body:{inline_string:&quot;denied\n&quot;} -->
+<!-- DirectResponse: status:403 body:{inline_string:&quot;denied\n&quot;} -->
 <g id="node8" class="node">
-<title>DirectResponse: status:403 &#160;body:{inline_string:&quot;denied\n&quot;}</title>
+<title>DirectResponse: status:403 body:{inline_string:&quot;denied\n&quot;}</title>
 <polygon fill="none" stroke="#000000" points="179.2738,-77.6156 179.2738,-127.2156 340.7262,-127.2156 340.7262,-77.6156 179.2738,-77.6156"/>
 <text text-anchor="middle" x="233.3401" y="-98.2156" font-family="Times,serif" font-size="14.00" fill="#000000">Direct Response</text>
 <polyline fill="none" stroke="#000000" points="287.4064,-77.6156 287.4064,-127.2156 "/>
@@ -114,9 +114,9 @@
 <polyline fill="none" stroke="#000000" points="287.4064,-102.4156 340.7262,-102.4156 "/>
 <text text-anchor="middle" x="314.0663" y="-85.8156" font-family="Times,serif" font-size="14.00" fill="#000000">denied</text>
 </g>
-<!-- Route: local_route&#45;&gt;DirectResponse: status:403 &#160;body:{inline_string:&quot;denied\n&quot;} -->
+<!-- Route: local_route&#45;&gt;DirectResponse: status:403 body:{inline_string:&quot;denied\n&quot;} -->
 <g id="edge7" class="edge">
-<title>Route: local_route&#45;&gt;DirectResponse: status:403 &#160;body:{inline_string:&quot;denied\n&quot;}</title>
+<title>Route: local_route&#45;&gt;DirectResponse: status:403 body:{inline_string:&quot;denied\n&quot;}</title>
 <path fill="none" stroke="#000000" d="M190.0746,-211.553C202.744,-206.2751 215.3451,-199.105 225,-189.4313 239.0387,-175.3652 247.6466,-154.9335 252.8112,-137.4029"/>
 <polygon fill="#000000" stroke="#000000" points="256.2608,-138.0515 255.4691,-127.4863 249.4994,-136.2392 256.2608,-138.0515"/>
 <text text-anchor="middle" x="263.3144" y="-176.8313" font-family="Times,serif" font-size="14.00" fill="#000000">prefix:&quot;/&quot;</text>
